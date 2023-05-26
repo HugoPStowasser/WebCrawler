@@ -8,6 +8,7 @@ using OpenQA.Selenium.Chrome;
 using System.Text.Json;
 using MongoDB.Driver;
 using WebCrawler.Model;
+using WebCrawler.Constants;
 
 namespace WebCrawler
 {
@@ -160,15 +161,12 @@ namespace WebCrawler
 
         static void SaveDataToDatabase(DateTime startTime, DateTime endTime, int numPages, List<CrawlerData> data)
         {
-            string connectionString = "mongodb+srv://hstowasser:senha@cluster0.sosxh7p.mongodb.net";
-            string databaseName = "webcrawler";
-            string collectionName = "execution_data";
             string json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
             int numLines = json.Split(Environment.NewLine).Length;
 
-            MongoClient client = new MongoClient(connectionString);
-            IMongoDatabase database = client.GetDatabase(databaseName);
-            IMongoCollection<DbCrawlerData> collection = database.GetCollection<DbCrawlerData>(collectionName);
+            MongoClient client = new MongoClient(DbConstants.ConnectionString);
+            IMongoDatabase database = client.GetDatabase(DbConstants.DatabaseName);
+            IMongoCollection<DbCrawlerData> collection = database.GetCollection<DbCrawlerData>(DbConstants.CollectionName);
 
             DbCrawlerData dbCrawlerData = new DbCrawlerData
             {
