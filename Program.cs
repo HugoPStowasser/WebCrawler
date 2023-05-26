@@ -9,6 +9,7 @@ using System.Text.Json;
 using MongoDB.Driver;
 using WebCrawler.Model;
 using WebCrawler.Constants;
+using MongoDB.Bson;
 
 namespace WebCrawler
 {
@@ -161,20 +162,19 @@ namespace WebCrawler
 
         static void SaveDataToDatabase(DateTime startTime, DateTime endTime, int numPages, List<CrawlerData> data)
         {
-            string json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
-            int numLines = json.Split(Environment.NewLine).Length;
-
             MongoClient client = new MongoClient(DbConstants.ConnectionString);
             IMongoDatabase database = client.GetDatabase(DbConstants.DatabaseName);
-            IMongoCollection<DbCrawlerData> collection = database.GetCollection<DbCrawlerData>(DbConstants.CollectionName);
+            IMongoCollection<BsonDocument> collection = database.GetCollection<BsonDocument>(DbConstants.CollectionName);
 
-            DbCrawlerData dbCrawlerData = new DbCrawlerData
+            List<BsonDocument> bsonDocuments = data.Select(d => d.ToBsonDocument()).ToList();
+
+            BsonDocument dbCrawlerData = new BsonDocument
             {
-                StartTime = startTime,
-                EndTime = endTime,
-                NumPages = numPages,
-                NumLines = numLines,
-                Json = json
+                { "StartTime", startTime },
+                { "EndTime", endTime },
+                { "NumPages", numPages },
+                { "NumLines", bsonDocuments.Count },
+                { "Data", new BsonArray(bsonDocuments) }
             };
 
             collection.InsertOne(dbCrawlerData);

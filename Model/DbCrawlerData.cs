@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MongoDB.Bson;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,6 @@ namespace WebCrawler.Model
         public DateTime EndTime { get; set; }
         public int NumPages { get; set; }
         public int NumLines { get; set; }
-        public string? Json { get; set; }
+        public BsonDocument? Json { get; set; }
     }
 }
