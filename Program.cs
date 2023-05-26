@@ -30,7 +30,7 @@ namespace WebCrawler
 
                 int numPages = await GetNumPages(mainPage, baseUrl);
 
-                List<Dictionary<string, string>> allData = new List<Dictionary<string, string>>();
+                List<CrawlerData> allData = new List<CrawlerData>();
 
                 for (int page = 1; page <= numPages; page++)
                 {
@@ -39,7 +39,7 @@ namespace WebCrawler
                     var document = new HtmlDocument();
                     document.LoadHtml(pageContent);
 
-                    List<Dictionary<string, string>> data = ExtractDataFromPage(document);
+                    List<CrawlerData> data = ExtractDataFromPage(document);
                     allData.AddRange(data);
 
                     SavePageHtml(pageContent, $"page_{page}.html"); // Salvar o HTML da página em um arquivo separado
@@ -106,9 +106,9 @@ namespace WebCrawler
             return driver.PageSource;
         }
 
-        static List<Dictionary<string, string>> ExtractDataFromPage(HtmlDocument document)
+        static List<CrawlerData> ExtractDataFromPage(HtmlDocument document)
         {
-            List<Dictionary<string, string>> data = new List<Dictionary<string, string>>();
+            List<CrawlerData> data = new List<CrawlerData>();
 
             HtmlNodeCollection rowNodes = document.DocumentNode.SelectNodes("//div[@id='content']//table/tbody/tr");
 
@@ -123,12 +123,12 @@ namespace WebCrawler
                     string country = cellNodes[3].InnerText.Trim();
                     string protocol = cellNodes[6].InnerText.Trim();
 
-                    Dictionary<string, string> rowData = new Dictionary<string, string>()
+                    CrawlerData rowData = new CrawlerData()
                     {
-                        { "IP Address", ipAddress },
-                        { "Port", port },
-                        { "Country", country },
-                        { "Protocol", protocol }
+                        IPAddress = ipAddress,
+                        Port = port, 
+                        Country = country,
+                        Protocol = protocol
                     };
 
                     data.Add(rowData);
@@ -138,7 +138,7 @@ namespace WebCrawler
             return data;
         }
 
-        static void SaveDataToJson(List<Dictionary<string, string>> data, string filename)
+        static void SaveDataToJson(List<CrawlerData> data, string filename)
         {
             string json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
 
@@ -158,7 +158,7 @@ namespace WebCrawler
             File.WriteAllText(fullFilePath, pageContent);
         }
 
-        static void SaveDataToDatabase(DateTime startTime, DateTime endTime, int numPages, List<Dictionary<string, string>> data)
+        static void SaveDataToDatabase(DateTime startTime, DateTime endTime, int numPages, List<CrawlerData> data)
         {
             string connectionString = "mongodb+srv://hstowasser:senha@cluster0.sosxh7p.mongodb.net";
             string databaseName = "webcrawler";
